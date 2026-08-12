@@ -3,106 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>凸ダメージ計算＆重複チェックツール</title>
+<title>属性別 凸ダメージ計算ツール</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f0f2f5; color: #333; }
-h1 { font-size: 1.5rem; margin-bottom: 10px; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
+h1 { font-size: 1.4rem; margin-bottom: 15px; }
 .container { max-width: 900px; margin: 0 auto; }
-.total-box { background: #007bff; color: #fff; padding: 15px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
-.deck-card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
-.deck-card.error { border: 2px solid #ff4d4f; background: #fff1f0; }
-.form-group { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
-label { font-weight: bold; width: 80px; }
-input[type="text"], input[type="number"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 120px; }
-.error-msg { color: #ff4d4f; font-weight: bold; font-size: 0.85rem; margin-top: 5px; display: none; }
-.deck-card.error .error-msg { display: block; }
-.checkbox-label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+/* 属性選択コントロールパネル */
+.control-panel { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.control-panel label { font-weight: bold; }
+.select-attr { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; min-width: 130px; background: #fff; }
+.btn-commit { padding: 8px 20px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.btn-commit:hover { background: #218838; }
+
+/* 合計ダメージ表示 */
+.total-box { background: #007bff; color: #fff; padding: 18px; border-radius: 8px; font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
+.total-title { font-size: 0.85rem; opacity: 0.85; margin-bottom: 3px; }
+
+.header-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.current-attr-title { font-size: 1.1rem; font-weight: bold; color: #333; }
+.status-tag { font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; background: #e0e0e0; color: #555; }
+.status-tag.updated { background: #d4edda; color: #155724; }
+
+/* カードデザイン */
+.deck-card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-left: 6px solid #007bff; }
+.deck-card.is-excluded { border-left-color: #8c8c8c; background: #f9f9f9; }
+
+.deck-info { flex: 1; min-width: 200px; }
+.user-name { font-weight: bold; font-size: 1.1rem; margin-bottom: 2px; }
+.deck-num { font-size: 0.8rem; color: #777; margin-bottom: 4px; }
+.chara-name { font-size: 0.9rem; color: #444; }
+
+.damage-box { text-align: right; min-width: 120px; }
+.damage-value { font-size: 1.2rem; font-weight: bold; color: #111; }
+.excluded-tag { font-size: 0.75rem; color: #dc3545; font-weight: bold; display: none; }
+.is-excluded .excluded-tag { display: block; }
+.is-excluded .damage-value { color: #aaa; text-decoration: line-through; }
+
+.loading-box { text-align: center; padding: 40px 0; color: #666; font-size: 1rem; }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>凸ダメージ計算ツール</h1>
+<h1>属性別 凸ダメージ計算ツール</h1>
 
-<div class="total-box">
-有効合計ダメージ: <span id="totalDamage">0</span>
+<!-- 属性選択 & 反映（コミット）ボタン -->
+<div class="control-panel">
+<label for="attrSelect">属性を選択:</label>
+<select id="attrSelect" class="select-attr">
+<option value="灼熱">灼熱</option>
+<option value="水冷">水冷</option>
+<option value="風圧">風圧</option>
+<option value="鉄鋼">鉄鋼</option>
+<option value="電撃">電撃</option>
+</select>
+<button class="btn-commit" onclick="fetchAttrData()">反映 (コミット)</button>
 </div>
 
-<div id="deckList"></div>
+<!-- 有効合計ダメージ -->
+<div class="total-box">
+<div class="total-title"><span id="displayAttr">灼熱</span> 有効合計ダメージ</div>
+<span id="totalDamage">0</span>
+</div>
+
+<div class="header-group">
+<div class="current-attr-title" id="attrHeader">「灼熱」の凸一覧</div>
+<span class="status-tag" id="statusTag">未読み込み</span>
+</div>
+
+<div id="deckList">
+<div class="loading-box">属性を選んで「反映 (コミット)」ボタンを押してください。</div>
+</div>
 </div>
 
 <script>
-const attributes = ['灼熱', '水冷', '風圧', '鉄鋼', '電撃'];
-const decks = [];
+// 提供されたGASのウェブアプリURL
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwH_3nm9khd1UqeLbcc9CTfbhlt51QmvZZKUk0xiFSOL_kqcUdHbly_zhUc8IvTo64/exec";
 
-function init() {
+async function fetchAttrData() {
+const selectedAttr = document.getElementById('attrSelect').value;
 const container = document.getElementById('deckList');
+const totalEl = document.getElementById('totalDamage');
+const statusTag = document.getElementById('statusTag');
+const displayAttr = document.getElementById('displayAttr');
+const attrHeader = document.getElementById('attrHeader');
+
+displayAttr.textContent = selectedAttr;
+attrHeader.textContent = `「${selectedAttr}」の凸一覧`;
+container.innerHTML = `<div class="loading-box">スプレッドシートの「${selectedAttr}」シートからデータを同期中...</div>`;
+statusTag.textContent = '同期中...';
+statusTag.classList.remove('updated');
+totalEl.textContent = '0';
+
+try {
+// GAS側へ ?attr=属性名 でリクエスト（GAS側で受け取るパラメータ設定に合わせます）
+const response = await fetch(`${GAS_API_URL}?attr=${encodeURIComponent(selectedAttr)}`);
+if (!response.ok) throw new Error('通信エラー');
+
+const resData = await response.json();
+
+// エラーレスポンスの場合
+if (resData.error) {
+container.innerHTML = `<div class="loading-box" style="color:#dc3545;">${resData.error}</div>`;
+statusTag.textContent = 'エラー';
+return;
+}
+
+// データ配列の抽出（配列で直接返ってくる場合と、object内に含まれる場合の両方に対応）
+const list = Array.isArray(resData) ? resData : (resData.data || []);
+
+if (list.length === 0) {
+container.innerHTML = `<div class="loading-box">「${selectedAttr}」シートに表示できるデータがありません</div>`;
+statusTag.textContent = 'データなし';
+return;
+}
+
+let totalDamage = 0;
 let html = '';
 
-attributes.forEach(attr => {
-for (let i = 1; i <= 3; i++) {
-const id = `${attr}_${i}`;
-decks.push(id);
+list.forEach(item => {
+// キー名の揺れ（isExcluded/excluded, userName/user, damage/dmg, charaName/deck）に対応
+const isExcluded = item.isExcluded === true || item.excluded === true;
+const damage = parseFloat(item.damage || item.dmg || 0) || 0;
+const userName = item.userName || item.user || '名前なし';
+const deckNum = item.deckNum || item.num || '';
+const charaName = item.charaName || item.deck || item.chara || '';
+
+if (!isExcluded) {
+totalDamage += damage;
+}
 
 html += `
-<div class="deck-card" id="card_${id}">
-<div class="form-group">
-<label>${attr} ${i}凸</label>
-<input type="text" id="chara_${id}" placeholder="編成キャラ（例: ラピ、クラウン）" oninput="calculate()">
-<input type="number" id="dmg_${id}" placeholder="ダメージ" oninput="calculate()">
-<label class="checkbox-label">
-<input type="checkbox" id="used_${id}" onchange="calculate()"> 使用済
-</label>
+<div class="deck-card ${isExcluded ? 'is-excluded' : ''}">
+<div class="deck-info">
+<div class="user-name">${userName}</div>
+<div class="deck-num">${deckNum}</div>
+<div class="chara-name">${charaName}</div>
 </div>
-<div class="error-msg">⚠️ 他の【使用済】編成とキャラが重複しているため、計算から除外されています</div>
+<div class="damage-box">
+<div class="damage-value">${damage.toLocaleString()}</div>
+<div class="excluded-tag">⚠️ 計算除外</div>
+</div>
 </div>
 `;
-}
 });
 
 container.innerHTML = html;
+totalEl.textContent = totalDamage.toLocaleString();
+statusTag.textContent = '反映完了';
+statusTag.classList.add('updated');
+
+} catch (err) {
+container.innerHTML = '<div class="loading-box" style="color:#dc3545;">データの取得に失敗しました。<br>スプレッドシートのアクセス権（「全員」設定）を確認してください。</div>';
+statusTag.textContent = '通信失敗';
+console.error(err);
+}
 }
 
-function calculate() {
-const usedCharas = new Set();
-
-decks.forEach(id => {
-const isUsed = document.getElementById(`used_${id}`).checked;
-const charaInput = document.getElementById(`chara_${id}`).value.trim();
-
-if (isUsed && charaInput !== "") {
-const charaArray = charaInput.split(/[、,,\s]+/).filter(c => c !== "");
-charaArray.forEach(c => usedCharas.add(c));
-}
-});
-
-let totalDamage = 0;
-
-decks.forEach(id => {
-const isUsed = document.getElementById(`used_${id}`).checked;
-const charaInput = document.getElementById(`chara_${id}`).value.trim();
-const dmgInput = parseFloat(document.getElementById(`dmg_${id}`).value) || 0;
-const cardEl = document.getElementById(`card_${id}`);
-
-let isDuplicate = false;
-
-if (!isUsed && charaInput !== "") {
-const charaArray = charaInput.split(/[、,,\s]+/).filter(c => c !== "");
-isDuplicate = charaArray.some(c => usedCharas.has(c));
-}
-
-if (isDuplicate) {
-cardEl.classList.add('error');
-} else {
-cardEl.classList.remove('error');
-totalDamage += dmgInput;
-}
-});
-
-document.getElementById('totalDamage').textContent = totalDamage.toLocaleString();
-}
-
-window.onload = init;
+// 起動時に灼熱データを初期取得
+window.onload = fetchAttrData;
 </script>
 
 </body>
