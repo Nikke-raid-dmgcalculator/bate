@@ -3,54 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>属性別 凸ダメージ計算ツール</title>
+<title>凸ダメージ計算ツール</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
-h1 { font-size: 1.4rem; margin-bottom: 15px; }
-.container { max-width: 900px; margin: 0 auto; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; background: #eaeded; color: #333; margin: 0; }
+.container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 340px 1fr; gap: 15px; }
 
-/* 属性選択コントロールパネル */
-.control-panel { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.control-panel label { font-weight: bold; }
-.select-attr { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; min-width: 130px; background: #fff; }
-.btn-commit { padding: 8px 20px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold; transition: 0.2s; }
+/* 上部コントロール */
+.top-bar { grid-column: 1 / -1; background: #fff; padding: 12px 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.top-bar label { font-weight: bold; font-size: 0.95rem; }
+.select-attr { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95rem; }
+.btn-commit { padding: 6px 16px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 0.95rem; cursor: pointer; font-weight: bold; }
 .btn-commit:hover { background: #218838; }
 
-/* 合計ダメージ表示 */
-.total-box { background: #007bff; color: #fff; padding: 18px; border-radius: 8px; font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; text-align: center; }
-.total-title { font-size: 0.85rem; opacity: 0.85; margin-bottom: 3px; }
+/* 左カラム：設定 & 候補結果 */
+.left-col { display: flex; flex-direction: column; gap: 15px; }
 
-.header-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.current-attr-title { font-size: 1.1rem; font-weight: bold; color: #333; }
-.status-tag { font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; background: #e0e0e0; color: #555; }
-.status-tag.updated { background: #d4edda; color: #155724; }
+.setting-card { background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #ccc; }
+.setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.setting-row:last-child { margin-bottom: 0; }
+.setting-input { width: 100px; padding: 5px; text-align: right; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; }
 
-/* カードデザイン */
-.deck-card { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-left: 6px solid #007bff; }
-.deck-card.is-excluded { border-left-color: #8c8c8c; background: #f9f9f9; }
+.candidate-card { background: #fff; border-radius: 6px; border: 1px solid #ccc; overflow: hidden; }
+.cand-header { background: #f0f4f8; padding: 8px 12px; font-weight: bold; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; font-size: 0.9rem; }
+.cand-summary { padding: 8px 12px; background: #fafafa; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+.cand-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.cand-table th, .cand-table td { border-bottom: 1px solid #eee; padding: 5px 8px; text-align: left; }
+.cand-table th { background: #f9f9f9; color: #666; }
 
-.deck-info { flex: 1; min-width: 200px; }
-.user-name { font-weight: bold; font-size: 1.1rem; margin-bottom: 2px; }
-.deck-num { font-size: 0.8rem; color: #777; margin-bottom: 4px; }
-.chara-name { font-size: 0.9rem; color: #444; }
+/* 右カラム：メンバー表データ */
+.right-col { background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #ccc; }
+.member-title { font-weight: bold; margin-bottom: 10px; font-size: 1rem; border-bottom: 2px solid #007bff; padding-bottom: 4px; }
 
-.damage-box { text-align: right; min-width: 120px; }
-.damage-value { font-size: 1.2rem; font-weight: bold; color: #111; }
-.excluded-tag { font-size: 0.75rem; color: #dc3545; font-weight: bold; display: none; }
-.is-excluded .excluded-tag { display: block; }
-.is-excluded .damage-value { color: #aaa; text-decoration: line-through; }
+.member-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.member-table th, .member-table td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+.member-table th { background: #f2f2f2; }
+.row-excluded { background: #f0f0f0; color: #888; text-decoration: line-through; }
 
-.loading-box { text-align: center; padding: 40px 0; color: #666; font-size: 1rem; }
+.loading-msg { grid-column: 1 / -1; text-align: center; padding: 30px; color: #666; }
+@media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<div class="container">
-<h1>属性別 凸ダメージ計算ツール</h1>
-
-<!-- 属性選択 & 反映（コミット）ボタン -->
-<div class="control-panel">
-<label for="attrSelect">属性を選択:</label>
+<div class="top-bar">
+<label for="attrSelect">属性:</label>
 <select id="attrSelect" class="select-attr">
 <option value="灼熱">灼熱</option>
 <option value="水冷">水冷</option>
@@ -58,111 +54,249 @@ h1 { font-size: 1.4rem; margin-bottom: 15px; }
 <option value="鉄鋼">鉄鋼</option>
 <option value="電撃">電撃</option>
 </select>
-<button class="btn-commit" onclick="fetchAttrData()">反映 (コミット)</button>
+<button class="btn-commit" onclick="loadAndCalculate()">反映 (データ取得&計算)</button>
+<span id="statusMsg" style="font-size:0.85rem; color:#666;"></span>
 </div>
 
-<!-- 有効合計ダメージ -->
-<div class="total-box">
-<div class="total-title"><span id="displayAttr">灼熱</span> 有効合計ダメージ</div>
-<span id="totalDamage">0</span>
+<div class="container">
+<!-- 左エリア：条件設定 ＆ 第一〜第三候補 -->
+<div class="left-col">
+<div class="setting-card">
+<div class="setting-row">
+<label>残りHP</label>
+<input type="number" id="targetHp" class="setting-input" value="5000" onchange="runCalculation()">
+</div>
+<div class="setting-row">
+<label>想定凸数</label>
+<select id="numTotsu" class="setting-input" onchange="runCalculation()">
+<option value="1">1</option><option value="2">2</option><option value="3">3</option>
+<option value="4">4</option><option value="5">5</option><option value="6" selected>6</option>
+</select>
+</div>
 </div>
 
-<div class="header-group">
-<div class="current-attr-title" id="attrHeader">「灼熱」の凸一覧</div>
-<span class="status-tag" id="statusTag">未読み込み</span>
+<!-- 第一候補 -->
+<div class="candidate-card">
+<div class="cand-header"><span>第一候補</span><span id="c1-diff">差分: -</span></div>
+<div class="cand-summary">合計ダメージ: <b id="c1-total">0</b></div>
+<table class="cand-table">
+<thead><tr><th>ユーザー</th><th>編成</th><th>凸番号</th><th>凸</th><th>Dmg</th></tr></thead>
+<tbody id="c1-list"><tr><td colspan="5" style="text-align:center;">-</td></tr></tbody>
+</table>
 </div>
 
-<div id="deckList">
-<div class="loading-box">属性を選んで「反映 (コミット)」ボタンを押してください。</div>
+<!-- 第二候補 -->
+<div class="candidate-card">
+<div class="cand-header"><span>第二候補</span><span id="c2-diff">差分: -</span></div>
+<div class="cand-summary">合計ダメージ: <b id="c2-total">0</b></div>
+<table class="cand-table">
+<thead><tr><th>ユーザー</th><th>編成</th><th>凸番号</th><th>凸</th><th>Dmg</th></tr></thead>
+<tbody id="c2-list"><tr><td colspan="5" style="text-align:center;">-</td></tr></tbody>
+</table>
+</div>
+
+<!-- 第三候補 -->
+<div class="candidate-card">
+<div class="cand-header"><span>第三候補</span><span id="c3-diff">差分: -</span></div>
+<div class="cand-summary">合計ダメージ: <b id="c3-total">0</b></div>
+<table class="cand-table">
+<thead><tr><th>ユーザー</th><th>編成</th><th>凸番号</th><th>凸</th><th>Dmg</th></tr></thead>
+<tbody id="c3-list"><tr><td colspan="5" style="text-align:center;">-</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<!-- 右エリア：スプレッドシートデータ一覧 ＆ 手動除外 -->
+<div class="right-col">
+<div class="member-title">メンバー表 (手動除外チェック対応)</div>
+<table class="member-table">
+<thead>
+<tr>
+<th>除外</th>
+<th>ユーザー名</th>
+<th>n凸目</th>
+<th>凸番号</th>
+<th>編成</th>
+<th>ダメージ</th>
+</tr>
+</thead>
+<tbody id="memberTbody">
+<tr><td colspan="6" style="text-align:center;">「反映」ボタンを押して読み込んでください</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 
 <script>
-// 提供されたGASのウェブアプリURL
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzSYEkAW9gu97KOHi6NiXuhcxAY7GwaEME3fEQz2mfDwih7LsjIkd_e3aaOiCaRgPs/exec";
+// 最新のGAS WebアプリURLを設定
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwH_3nm9khd1UqeLbcc9CTfbhlt51QmvZZKUk0xiFSOL_kqcUdHbly_zhUc8IvTo64/exec";
 
-async function fetchAttrData() {
-const selectedAttr = document.getElementById('attrSelect').value;
-const container = document.getElementById('deckList');
-const totalEl = document.getElementById('totalDamage');
-const statusTag = document.getElementById('statusTag');
-const displayAttr = document.getElementById('displayAttr');
-const attrHeader = document.getElementById('attrHeader');
+let rawMemberData = []; // スプレッドシートから取得した生データ
 
-displayAttr.textContent = selectedAttr;
-attrHeader.textContent = `「${selectedAttr}」の凸一覧`;
-container.innerHTML = `<div class="loading-box">スプレッドシートの「${selectedAttr}」シートからデータを同期中...</div>`;
-statusTag.textContent = '同期中...';
-statusTag.classList.remove('updated');
-totalEl.textContent = '0';
+async function loadAndCalculate() {
+const attr = document.getElementById('attrSelect').value;
+const status = document.getElementById('statusMsg');
+status.textContent = 'データ取得中...';
 
 try {
-// GAS側へ ?attr=属性名 でリクエスト（GAS側で受け取るパラメータ設定に合わせます）
-const response = await fetch(`${GAS_API_URL}?attr=${encodeURIComponent(selectedAttr)}`);
-if (!response.ok) throw new Error('通信エラー');
+const res = await fetch(`${GAS_API_URL}?attr=${encodeURIComponent(attr)}`);
+const data = await res.json();
 
-const resData = await response.json();
-
-// エラーレスポンスの場合
-if (resData.error) {
-container.innerHTML = `<div class="loading-box" style="color:#dc3545;">${resData.error}</div>`;
-statusTag.textContent = 'エラー';
+if (data.error) {
+status.textContent = `エラー: ${data.error}`;
 return;
 }
 
-// データ配列の抽出（配列で直接返ってくる場合と、object内に含まれる場合の両方に対応）
-const list = Array.isArray(resData) ? resData : (resData.data || []);
+rawMemberData = data;
+renderMemberTable();
+runCalculation();
+status.textContent = '同期完了';
+} catch (e) {
+status.textContent = '通信失敗';
+console.error(e);
+}
+}
 
-if (list.length === 0) {
-container.innerHTML = `<div class="loading-box">「${selectedAttr}」シートに表示できるデータがありません</div>`;
-statusTag.textContent = 'データなし';
+// 右側のメンバー表描画（画面上で除外チェック項目を追加）
+function renderMemberTable() {
+const tbody = document.getElementById('memberTbody');
+if (!rawMemberData || rawMemberData.length === 0) {
+tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">データがありません</td></tr>';
 return;
 }
 
-let totalDamage = 0;
 let html = '';
-
-list.forEach(item => {
-// キー名の揺れ（isExcluded/excluded, userName/user, damage/dmg, charaName/deck）に対応
-const isExcluded = item.isExcluded === true || item.excluded === true;
-const damage = parseFloat(item.damage || item.dmg || 0) || 0;
-const userName = item.userName || item.user || '名前なし';
-const deckNum = item.deckNum || item.num || '';
-const charaName = item.charaName || item.deck || item.chara || '';
-
-if (!isExcluded) {
-totalDamage += damage;
-}
-
+rawMemberData.forEach((item, idx) => {
 html += `
-<div class="deck-card ${isExcluded ? 'is-excluded' : ''}">
-<div class="deck-info">
-<div class="user-name">${userName}</div>
-<div class="deck-num">${deckNum}</div>
-<div class="chara-name">${charaName}</div>
-</div>
-<div class="damage-box">
-<div class="damage-value">${damage.toLocaleString()}</div>
-<div class="excluded-tag">⚠️ 計算除外</div>
-</div>
-</div>
+<tr class="${item.isExcluded ? 'row-excluded' : ''}">
+<td><input type="checkbox" ${item.isExcluded ? 'checked' : ''} onchange="toggleExclude(${idx})"></td>
+<td>${item.userName || ''}</td>
+<td>${item.deckNum || ''}</td>
+<td>${item.otsuNo || ''}</td>
+<td style="text-align:left;">${item.charaName || ''}</td>
+<td style="text-align:right;">${(item.damage || 0).toLocaleString()}</td>
+</tr>
 `;
 });
-
-container.innerHTML = html;
-totalEl.textContent = totalDamage.toLocaleString();
-statusTag.textContent = '反映完了';
-statusTag.classList.add('updated');
-
-} catch (err) {
-container.innerHTML = '<div class="loading-box" style="color:#dc3545;">データの取得に失敗しました。<br>スプレッドシートのアクセス権（「全員」設定）を確認してください。</div>';
-statusTag.textContent = '通信失敗';
-console.error(err);
-}
+tbody.innerHTML = html;
 }
 
-// 起動時に灼熱データを初期取得
-window.onload = fetchAttrData;
+// 画面上での除外切り替え
+function toggleExclude(idx) {
+rawMemberData[idx].isExcluded = !rawMemberData[idx].isExcluded;
+renderMemberTable();
+runCalculation();
+}
+
+// --- スプレッドシートと同等の計算ロジック（JavaScript実装） ---
+function runCalculation() {
+const targetHp = Number(document.getElementById('targetHp').value) || 0;
+const numTotsu = Number(document.getElementById('numTotsu').value) || 0;
+
+// 有効データの抽出
+const validRows = rawMemberData.filter(r => !r.isExcluded && r.damage > 0).map((r, i) => {
+const charaList = r.charaName ? r.charaName.split(/[,、\s]+/).map(c => c.trim()).filter(Boolean) : [];
+return { ...r, id: i, charaList };
+});
+
+if (validRows.length < numTotsu) {
+clearCandidates();
+return;
+}
+
+// 組み合わせ生成
+let combinations = [];
+function getComb(start, current) {
+if (current.length === numTotsu) {
+if (isValidComb(current)) combinations.push([...current]);
+return;
+}
+for (let i = start; i < validRows.length; i++) {
+current.push(validRows[i]);
+getComb(i + 1, current);
+current.pop();
+}
+}
+getComb(0, []);
+
+// 評価とユニーク選出
+let evaluated = combinations.map(comb => {
+const totalDamage = comb.reduce((sum, item) => sum + item.damage, 0);
+const diff = targetHp - totalDamage;
+const key = comb.map(item => item.id).sort().join('-');
+return { key, items: comb, totalDamage, diff, absDiff: Math.abs(diff) };
+});
+
+evaluated.sort((a, b) => a.absDiff - b.absDiff);
+
+let candidates = [];
+let seenKeys = new Set();
+for (let cand of evaluated) {
+if (!seenKeys.has(cand.key)) {
+seenKeys.add(cand.key);
+candidates.push(cand);
+}
+if (candidates.length >= 3) break;
+}
+
+renderCandidateUI('c1', candidates[0], targetHp);
+renderCandidateUI('c2', candidates[1], targetHp);
+renderCandidateUI('c3', candidates[2], targetHp);
+}
+
+// 被り・凸数制限チェック
+function isValidComb(comb) {
+let usedCharas = new Set();
+let count3 = 0, count2 = 0;
+
+for (let item of comb) {
+for (let chara of item.charaList) {
+if (usedCharas.has(chara)) return false;
+usedCharas.add(chara);
+}
+const nStr = String(item.deckNum || '');
+if (nStr.includes('3')) count3++;
+else if (nStr.includes('2')) count2++;
+}
+if (count3 > 1 || count2 > 2) return false;
+return true;
+}
+
+function renderCandidateUI(prefix, cand, targetHp) {
+const totalEl = document.getElementById(`${prefix}-total`);
+const diffEl = document.getElementById(`${prefix}-diff`);
+const listEl = document.getElementById(`${prefix}-list`);
+
+if (!cand) {
+totalEl.textContent = '0';
+diffEl.textContent = '差分: -';
+listEl.innerHTML = '<tr><td colspan="5" style="text-align:center;">該当なし</td></tr>';
+return;
+}
+
+totalEl.textContent = cand.totalDamage.toLocaleString();
+diffEl.textContent = `差分: ${cand.diff.toLocaleString()}`;
+
+let html = '';
+cand.items.forEach(item => {
+html += `
+<tr>
+<td>${item.userName}</td>
+<td>${item.charaName}</td>
+<td>${item.otsuNo || ''}</td>
+<td>${item.deckNum || ''}</td>
+<td>${item.damage.toLocaleString()}</td>
+</tr>
+`;
+});
+listEl.innerHTML = html;
+}
+
+function clearCandidates() {
+['c1', 'c2', 'c3'].forEach(p => renderCandidateUI(p, null, 0));
+}
+
+window.onload = loadAndCalculate;
 </script>
 
 </body>
